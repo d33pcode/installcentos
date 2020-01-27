@@ -116,7 +116,7 @@ yum -y --enablerepo=epel install ansible.rpm
 cat <<EOD > /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-${IP}		$(hostname) console console.${DOMAIN}  
+${IP}		$(hostname) ${DOMAIN}  
 EOD
 
 if [ -z $DISK ]; then 
@@ -188,7 +188,7 @@ if [ "$LETSENCRYPT" = true ] ; then
 			--agree-tos \
 			-d $DOMAIN \
 			-d *.$DOMAIN \
-			-d *.apps.$DOMAIN
+			-d *.$DOMAIN/apps
 	
 	## Modify inventory.ini 
 	# Declare usage of Custom Certificate
@@ -201,14 +201,14 @@ if [ "$LETSENCRYPT" = true ] ; then
 	
 	openshift_master_overwrite_named_certificates=true
 	
-	openshift_master_cluster_hostname=console-internal.${DOMAIN}
-	openshift_master_cluster_public_hostname=console.${DOMAIN}
+	openshift_master_cluster_hostname=${DOMAIN}
+	openshift_master_cluster_public_hostname=${DOMAIN}
 	
-	openshift_master_named_certificates=[{"certfile": "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem", "keyfile": "/etc/letsencrypt/live/${DOMAIN}/privkey.pem", "cafile": "/etc/letsencrypt/live/${DOMAIN}/chain.pem", "names": ["console.${DOMAIN}"]}]
+	openshift_master_named_certificates=[{"certfile": "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem", "keyfile": "/etc/letsencrypt/live/${DOMAIN}/privkey.pem", "cafile": "/etc/letsencrypt/live/${DOMAIN}/chain.pem", "names": ["${DOMAIN}"]}]
 	
 	openshift_hosted_router_certificate={"certfile": "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem", "keyfile": "/etc/letsencrypt/live/${DOMAIN}/privkey.pem", "cafile": "/etc/letsencrypt/live/${DOMAIN}/chain.pem"}
 	
-	openshift_hosted_registry_routehost=registry.apps.${DOMAIN}
+	openshift_hosted_registry_routehost=${DOMAIN}/apps/registry
 	openshift_hosted_registry_routecertificates={"certfile": "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem", "keyfile": "/etc/letsencrypt/live/${DOMAIN}/privkey.pem", "cafile": "/etc/letsencrypt/live/${DOMAIN}/chain.pem"}
 	openshift_hosted_registry_routetermination=reencrypt
 EOT
@@ -248,13 +248,13 @@ if [ "$PVS" = "true" ]; then
 fi
 
 echo "******"
-echo "* Your console is https://console.$DOMAIN:$API_PORT"
+echo "* Your console is https://$DOMAIN:$API_PORT"
 echo "* Your username is $USERNAME "
 echo "* Your password is $PASSWORD "
 echo "*"
 echo "* Login using:"
 echo "*"
-echo "$ oc login -u ${USERNAME} -p ${PASSWORD} https://console.$DOMAIN:$API_PORT/"
+echo "$ oc login -u ${USERNAME} -p ${PASSWORD} https://$DOMAIN:$API_PORT/"
 echo "******"
 
-oc login -u ${USERNAME} -p ${PASSWORD} https://console.$DOMAIN:$API_PORT/
+oc login -u ${USERNAME} -p ${PASSWORD} https://$DOMAIN:$API_PORT/
